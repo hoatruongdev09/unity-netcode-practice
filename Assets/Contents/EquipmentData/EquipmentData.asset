@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb854bfe686af4987871b48b583288a8, type: 3}
+  m_Name: EquipmentData
+  m_EditorClassIdentifier: 
+  <ID>k__BackingField: 1
+  <Model>k__BackingField: {fileID: 5019618648428082873, guid: 5e17861e0510c4013a8cdd2e8be7498a, type: 3}
+  <AttachBone>k__BackingField: WeaponHolder_R
+  <OffsetPosition>k__BackingField: {x: 0, y: 0, z: 0}
+  <OffsetRotation>k__BackingField: {x: 0, y: 0, z: 0, w: 0}
