@@ -11,16 +11,13 @@ GameObject:
   - component: {fileID: 1604386927783318354}
   - component: {fileID: 1604386927783318355}
   - component: {fileID: 2750777738924967755}
-  - component: {fileID: 7346191307898046665}
   - component: {fileID: 3215911718569233541}
   - component: {fileID: 8793841779592580291}
-  - component: {fileID: 13884768124750993}
-  - component: {fileID: 8202901459109211571}
   - component: {fileID: 6262150879204180474}
   - component: {fileID: 624941540444127015}
   - component: {fileID: 3328613979560134290}
   m_Layer: 0
-  m_Name: Character
+  m_Name: FigureCharacter
   m_TagString: playerCharacter
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74,23 +71,8 @@ MonoBehaviour:
   <ClanID>k__BackingField: 0
   animationController: {fileID: 3215911718569233541}
   movementController: {fileID: 8793841779592580291}
-  boneManager: {fileID: 8202901459109211571}
   graphicHolder: {fileID: 1604386928057193612}
   isStaticObject: 0
-  equipmentManager: {fileID: 13884768124750993}
---- !u!114 &7346191307898046665
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604386927783318356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0981bfcfc19d240438a0cadd555f9d4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controllingUnit: {fileID: 2750777738924967755}
 --- !u!114 &3215911718569233541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -118,41 +100,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   characterController: {fileID: 624941540444127015}
---- !u!114 &13884768124750993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604386927783318356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad675129d4c7041c78a3d4c45d322cc7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  boneManager: {fileID: 8202901459109211571}
-  leftHandEquipment:
-    m_InternalValue: -1
-  rightHandEquipment:
-    m_InternalValue: -1
---- !u!114 &8202901459109211571
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604386927783318356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cec0dc05014a74c748599e4f6a6c8f49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  externalBones:
-  - name: WeaponHolder_L
-    bone: {fileID: 8616647510633474870}
-  - name: WeaponHolder_R
-    bone: {fileID: 4431283446137797760}
-  animator: {fileID: 1663975283281496999}
 --- !u!114 &6262150879204180474
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,68 +190,6 @@ Transform:
   m_Father: {fileID: 1604386927783318354}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2021242181671720180
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4431283446137797760}
-  m_Layer: 0
-  m_Name: WeaponHolder_R
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4431283446137797760
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2021242181671720180}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.6, y: 2.3, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1607006821345988085}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3977222728185903268
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8616647510633474870}
-  m_Layer: 0
-  m_Name: WeaponHolder_L
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8616647510633474870
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3977222728185903268}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.6, y: -2.3, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1607077479337303129}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1604386928942081535
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -366,13 +251,7 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 9100000, guid: e0199faa9119e443da803518f5776cbe, type: 2}
     m_RemovedComponents: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 4100193745205670, guid: 2f3e27eecb190e44a9af50723c394274, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8616647510633474870}
-    - targetCorrespondingSourceObject: {fileID: 4170833147357194, guid: 2f3e27eecb190e44a9af50723c394274, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4431283446137797760}
+    m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 2f3e27eecb190e44a9af50723c394274, type: 3}
 --- !u!1 &1605322851608503403 stripped
 GameObject:
@@ -393,16 +272,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TransitionStateInfoList: []
   m_Animator: {fileID: 1663975283281496999}
---- !u!4 &1607006821345988085 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4170833147357194, guid: 2f3e27eecb190e44a9af50723c394274, type: 3}
-  m_PrefabInstance: {fileID: 1604386928942081535}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1607077479337303129 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4100193745205670, guid: 2f3e27eecb190e44a9af50723c394274, type: 3}
-  m_PrefabInstance: {fileID: 1604386928942081535}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1608817816498465471 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4580766925885248, guid: 2f3e27eecb190e44a9af50723c394274, type: 3}
