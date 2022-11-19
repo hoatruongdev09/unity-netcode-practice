@@ -1,3 +1,4 @@
+using deVoid.Utils;
 using UnityEngine;
 
 public class Spell : ISpell
@@ -36,10 +37,19 @@ public class Spell : ISpell
         SwitchState(SpellState.Ready);
     }
 
+    public void Active()
+    {
+        Signals.Get<RocketTriggerObject>().AddListener(OnRocketTriggerObject);
+    }
+
+    public void Disable()
+    {
+        Signals.Get<RocketTriggerObject>().RemoveListener(OnRocketTriggerObject);
+    }
+
     public bool Execute(AttackableUnit target, Vector3 castLocation, Vector3 castDirection)
     {
         if (CurrentState == SpellState.Cooldown) { return false; }
-        Debug.Log("Execute");
         Vector3 direct = castDirection;
         Vector3 location = castLocation;
         if (target != null && SpellData.CastingType.HasFlag(CastingType.Target) && GameHelper.GetSqrDistance(target.Position, GetActorPosition()) > Mathf.Pow(SpellData.CastRange, 2))
@@ -57,7 +67,7 @@ public class Spell : ISpell
             }
             if (target == null) { return false; }
         }
-        if (target == null && SpellData.CastingType.HasFlag(CastingType.Self | CastingType.SelfDirection))
+        if (target == null && (SpellData.CastingType & (CastingType.Self | CastingType.SelfDirection)) != 0)
         {
             target = GetActor();
         }
@@ -95,6 +105,7 @@ public class Spell : ISpell
     {
         CurrentCastInfo = castInfo;
         Debug.Log($"Excute: {castInfo.Target == null} ({castInfo.Location.x},{castInfo.Location.y},{castInfo.Location.z}) ({castInfo.Direction.x},{castInfo.Direction.y},{castInfo.Direction.z})");
+
         if (SpellData.HasChannelPhase && CurrentState == SpellState.Ready)
         {
             StartChannel();
@@ -125,7 +136,7 @@ public class Spell : ISpell
 
     public void OnPreCast()
     {
-        Owner.SetAnimation("cast_or_channel_spell", true);
+
     }
 
     public void OnSpellCast()
@@ -134,6 +145,14 @@ public class Spell : ISpell
         if (SpellData.ExecuteLogicType.HasFlag(ExecuteLogicType.Aoe))
         {
             ApplyAoe(CurrentCastInfo);
+        }
+        if (SpellData.ExecuteLogicType.HasFlag(ExecuteLogicType.Rocket))
+        {
+            ApplyRocket(CurrentCastInfo);
+        }
+        if (SpellData.ExecuteLogicType.HasFlag(ExecuteLogicType.Dash))
+        {
+            ApplyDash(CurrentCastInfo);
         }
     }
 
@@ -153,6 +172,16 @@ public class Spell : ISpell
         }
     }
 
+    private void ApplyRocket(ICastInfo currentCastInfo)
+    {
+        var direct = currentCastInfo.Direction;
+        var target = currentCastInfo.Target;
+        var owner = currentCastInfo.Owner;
+        var gameObject = NetworkSpawnController.Instance.CreateRocket(owner.Position, owner.Rotation, currentCastInfo, direct, target, SpellData.RocketWorker);
+        var rocket = gameObject.GetComponent<Rocket>();
+        rocket.NetworkOwnerID = Owner.NetworkOwnerID;
+    }
+
     private void ApplyAoe(ICastInfo currentCastInfo)
     {
         var units = SpellData.SpellAoeWorker.GetAffectedUnits(currentCastInfo.Location, currentCastInfo.Direction, currentCastInfo.Owner, SpellData.TargetFilter);
@@ -161,10 +190,57 @@ public class Spell : ISpell
             ApplyEffect(unit);
         }
     }
+    private void ApplyDash(ICastInfo currentCastInfo)
+    {
+        var direct = currentCastInfo.Direction;
+        var target = currentCastInfo.Target;
+        SpellData.DashWorker.DashLogic.Move(target, SpellData.DashWorker, direct, OnDashStart, OnDashFinish);
+    }
+
+    private void OnDashStart(InGameObject target)
+    {
+        target.SetActiveMovement(false);
+        target.SetActiveRotation(false);
+        target.PlayAnimation(SpellData.DashAnimation, 1);
+    }
+
+    private void OnDashFinish(InGameObject target)
+    {
+        target.SetActiveMovement(true);
+        target.SetActiveRotation(true);
+    }
+
+    private void OnRocketTriggerObject(Rocket rocket, InGameObject obj)
+    {
+        if (rocket.CastInfo == null || rocket.CastInfo.Spell != this) { return; }
+        var attackableUnit = obj as AttackableUnit;
+
+        if (attackableUnit)
+        {
+            RocketTriggerCharacter(rocket, attackableUnit);
+        }
+
+    }
+    private void RocketTriggerCharacter(Rocket rocket, AttackableUnit character)
+    {
+        if (!rocket.IsAlive()) { return; }
+        if (!SpellHelper.IsValidTarget(Owner, character, SpellData.TargetFilter)) { return; }
+        if (rocket.CurrentCharacterHitTime >= rocket.RocketWorker.LimitCharacterTime)
+        {
+            NetworkSpawnController.Instance.RemoveGameObject(rocket.NetworkObjectId);
+            return;
+        }
+        ApplyEffect(character);
+        rocket.SetCurrentHitTime(rocket.CurrentCharacterHitTime + 1);
+    }
 
     public void OnPostCast()
     {
         casted = true;
+        if (HasCastAnimation(castAnimationPlayIndex))
+        {
+            Owner.SetAnimation("cast_or_channel_spell", false);
+        }
         if (SpellData.CastPreventMove)
         {
             Owner.SetActiveMovement(true);
@@ -173,6 +249,10 @@ public class Spell : ISpell
         {
             Owner.SetActiveRotation(true);
         }
+    }
+    protected virtual bool HasCastAnimation(int index)
+    {
+        return SpellData.CastAnimation.Length != 0 && !string.IsNullOrEmpty(SpellData.CastAnimation[index]);
     }
     public void SwitchState(SpellState nextState)
     {
@@ -209,6 +289,15 @@ public class Spell : ISpell
 
     public void StartCast()
     {
+        if (SpellData.CastPreventMove)
+        {
+            Owner.SetActiveMovement(false);
+        }
+
+        if (SpellData.CastPreventRotate)
+        {
+            Owner.SetActiveRotation(false);
+        }
         lastCalculatedLockPoint = GetAnimationLockPoint();
         lastCalculatedCancelTime = GetAnimationCancelTime();
         lastCalculatedCastTime = GetAnimationCastTime();
@@ -216,6 +305,10 @@ public class Spell : ISpell
         SwitchState(SpellState.Casting);
         float animationPlaySpeed = SpellData.UseAttackCastPoint ? Owner.Stats.GetStat(StatType.AttackSpeed).Total : 1;
         PlayAnimation(Owner, SpellData.CastAnimation, animationPlaySpeed, SpellData.CastAnimationPlayMode, ref castAnimationPlayIndex);
+        if (HasCastAnimation(castAnimationPlayIndex))
+        {
+            Owner.SetAnimation("cast_or_channel_spell", true);
+        }
         OnPreCast();
     }
 
@@ -223,7 +316,6 @@ public class Spell : ISpell
 
     public void StartChannel()
     {
-        Owner.SetAnimation("cast_or_channel_spell", false);
         if (SpellData.ChannelPreventMove)
         {
             Owner.SetActiveMovement(false);
@@ -236,6 +328,10 @@ public class Spell : ISpell
         lastCalculatedMaxChannelTime = GetMaxChannelDuration();
         CurrentChannelTime = 0;
         Owner.PlayAnimation(SpellData.ChannelAnimation);
+        if (!string.IsNullOrEmpty(SpellData.ChannelAnimation))
+        {
+            Owner.SetAnimation("cast_or_channel_spell", true);
+        }
         SwitchState(SpellState.Channeling);
     }
 
@@ -257,6 +353,10 @@ public class Spell : ISpell
     }
     public void FinishChanel()
     {
+        if (!string.IsNullOrEmpty(SpellData.ChannelAnimation))
+        {
+            Owner.SetAnimation("cast_or_channel_spell", false);
+        }
         if (SpellData.ChannelPreventMove)
         {
             Owner.SetActiveMovement(true);
@@ -285,15 +385,15 @@ public class Spell : ISpell
         {
             OnSpellCastLock();
         }
+        if (CurrentCastTime >= lastCalculatedCastTime && !casted)
+        {
+            OnSpellCast();
+        }
         if (CurrentCastTime == lastCalculatedCancelTime)
         {
             OnPostCast();
             StartCooldown();
             return;
-        }
-        if (CurrentCastTime >= lastCalculatedCastTime && !casted)
-        {
-            OnSpellCast();
         }
     }
 
@@ -301,14 +401,7 @@ public class Spell : ISpell
     {
         if (isCastLocked) { return; }
         isCastLocked = true;
-        if (SpellData.CastPreventMove)
-        {
-            Owner.SetActiveMovement(false);
-        }
-        if (SpellData.CastPreventRotate)
-        {
-            Owner.SetActiveRotation(false);
-        }
+
     }
 
     public float GetAnimationCastTime()
@@ -316,7 +409,7 @@ public class Spell : ISpell
         float castPoint = SpellData.AnimationCastPoint;
         if (SpellData.UseAttackCastPoint)
         {
-            castPoint *= Owner.Stats.GetStat(StatType.AttackSpeed).Total;
+            castPoint /= Owner.Stats.GetStat(StatType.AttackSpeed).Total;
         }
         return castPoint;
     }
@@ -326,7 +419,7 @@ public class Spell : ISpell
         float lockPoint = SpellData.AnimationCastLockPoint;
         if (SpellData.UseAttackCastPoint)
         {
-            lockPoint *= Owner.Stats.GetStat(StatType.AttackSpeed).Total;
+            lockPoint /= Owner.Stats.GetStat(StatType.AttackSpeed).Total;
         }
         return lockPoint;
     }
@@ -335,7 +428,7 @@ public class Spell : ISpell
         float castCancelPoint = SpellData.AnimationCancelPoint;
         if (SpellData.UseAttackCastPoint)
         {
-            castCancelPoint *= Owner.Stats.GetStat(StatType.AttackSpeed).Total;
+            castCancelPoint /= Owner.Stats.GetStat(StatType.AttackSpeed).Total;
         }
         return castCancelPoint;
     }
@@ -366,6 +459,7 @@ public class Spell : ISpell
 
     public void PlayAnimation(InGameObject controller, string[] animations, float speed, AnimationsPlayMode mode, ref int index)
     {
+        if (animations.Length == 0) { return; }
         switch (mode)
         {
             case AnimationsPlayMode.RoundRobin:
@@ -380,8 +474,9 @@ public class Spell : ISpell
             case AnimationsPlayMode.Fixed:
                 controller.PlayAnimation(animations[index], speed);
                 break;
-
+            default: break;
         }
     }
+
 
 }

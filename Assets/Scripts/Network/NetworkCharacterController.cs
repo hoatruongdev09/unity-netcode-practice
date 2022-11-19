@@ -12,6 +12,7 @@ public class NetworkCharacterController : NetworkBehaviour
     private float rotateAngle;
     private bool isMovementPressing;
     private bool isSprintPressing;
+    private int[] spellIndexes = new int[] { 1, 2, 3, 4 };
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -49,11 +50,6 @@ public class NetworkCharacterController : NetworkBehaviour
     }
 
 
-    private void OnHpChanged(float previousValue, float newValue)
-    {
-
-    }
-
     private void Update()
     {
 
@@ -66,7 +62,15 @@ public class NetworkCharacterController : NetworkBehaviour
             ClientUpdate();
         }
     }
-    private void ServerUpdate()
+    private void FixedUpdate()
+    {
+        if (IsServer)
+        {
+            ServerFixedUpdate();
+        }
+    }
+
+    private void ServerFixedUpdate()
     {
         if (isMovementPressing)
         {
@@ -78,6 +82,13 @@ public class NetworkCharacterController : NetworkBehaviour
             {
                 controllingUnit.Move(moveInput);
             }
+        }
+    }
+
+    private void ServerUpdate()
+    {
+        if (isMovementPressing)
+        {
             controllingUnit.RotateTo(0, rotateAngle, 0);
         }
     }
@@ -132,6 +143,23 @@ public class NetworkCharacterController : NetworkBehaviour
             isSprintPressing = false;
         }
 
+        if (IsSpell1CastInput())
+        {
+            RequestCastSpellServerRpc(spellIndexes[0], Vector3.zero, GameHelper.UNSET_VECTOR_3);
+        }
+        if (IsSpell2CastInput())
+        {
+            RequestCastSpellServerRpc(spellIndexes[1], Vector3.zero, GameHelper.UNSET_VECTOR_3);
+        }
+        if (IsSpell3CastInput())
+        {
+            RequestCastSpellServerRpc(spellIndexes[2], Vector3.right, GameHelper.UNSET_VECTOR_3);
+        }
+        if (IsSpell4CastInput())
+        {
+            RequestCastSpellServerRpc(spellIndexes[3], Vector3.zero, GameHelper.UNSET_VECTOR_3);
+        }
+
     }
 
     private bool IsMainWeaponSelected()
@@ -144,7 +172,23 @@ public class NetworkCharacterController : NetworkBehaviour
     }
     private bool IsAttackInput()
     {
-        return Input.GetKeyDown(KeyCode.A);
+        return Input.GetKey(KeyCode.A);
+    }
+    private bool IsSpell1CastInput()
+    {
+        return Input.GetKey(KeyCode.Q);
+    }
+    private bool IsSpell2CastInput()
+    {
+        return Input.GetKey(KeyCode.W);
+    }
+    private bool IsSpell3CastInput()
+    {
+        return Input.GetKey(KeyCode.E);
+    }
+    private bool IsSpell4CastInput()
+    {
+        return Input.GetKey(KeyCode.R);
     }
     private bool IsSprintInput()
     {
@@ -160,7 +204,6 @@ public class NetworkCharacterController : NetworkBehaviour
     [ServerRpc(Delivery = RpcDelivery.Reliable)]
     private void RequestAttackServerRpc(ServerRpcParams serverRpcParams = default)
     {
-        Debug.Log($"request attack");
         var spell = controllingUnit.GetSpell(0);
         if (!controllingUnit.CanCast(spell)) { return; }
         controllingUnit.CastSpell(spell, null, controllingUnit.Forward, GameHelper.UNSET_VECTOR_3);
@@ -188,6 +231,15 @@ public class NetworkCharacterController : NetworkBehaviour
     {
         this.moveInput = GameHelper.ModifyDirectByCurrentView(moveInput);
         this.rotateAngle = GameHelper.Angle(this.moveInput);
+    }
+
+    [ServerRpc(Delivery = RpcDelivery.Reliable)]
+    private void RequestCastSpellServerRpc(int spellIndex, Vector3 direct, Vector3 location)
+    {
+        if (!controllingUnit) { return; }
+        var spell = controllingUnit.GetSpell(spellIndex);
+        if (spell == null || !controllingUnit.CanCast(spell)) { return; }
+        controllingUnit.CastSpell(spell, null, direct, location);
     }
 
     public void ServerTakeDamage(float amount)

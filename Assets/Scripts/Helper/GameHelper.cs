@@ -7,7 +7,7 @@ public static class GameHelper
     public const float ISOMETRIC_ANGLE = 45f;
     public const bool USE_ISOMETRIC_VIEW = true;
     public const int FREE_CLAN_ID = 0;
-    public const int UNSET_ITEM_ID = -1;
+    public const int UNSET_ID = -1;
     public static readonly Vector3 UNSET_VECTOR_3 = new Vector3(-404, 404, -404);
 
     public static Vector3 ModifyDirectByCurrentView(Vector3 input)
@@ -56,9 +56,13 @@ public static class GameHelper
 
     public static void TriggerDamageSignal(IDamageInfo damageInfo)
     {
-        // Signals.Get<TakeDamageSignal>().Dispatch(damageInfo);
         Debug.Log($"trigger event damage signal");
-        ObserverHub.takeDamageEvent?.Invoke(damageInfo);
+        Signals.Get<TakeDamageSignal>().Dispatch(damageInfo);
+    }
+
+    public static void TriggerCharacterDieSignal(AttackableUnit killer, AttackableUnit victim)
+    {
+        Signals.Get<CharacterDieSignal>().Dispatch(killer, victim);
     }
 
     public static long GeneratePacketId()

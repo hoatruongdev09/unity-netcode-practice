@@ -6,11 +6,14 @@ using Unity.Netcode.Components;
 
 public class InGameObject : NetworkBehaviour
 {
+    [SerializeField] protected NetworkVariable<bool> isDied = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public ulong NetworkOwnerID { get; set; }
     [field: SerializeField] public TeamId Team { get; protected set; }
     [field: SerializeField] public int ClanID { get; protected set; }
+    [field: SerializeField] public bool IsRemoved { get; protected set; }
     public BaseAnimationController AnimationController => animationController;
-    public BaseCharacterMovementController MovementController => movementController;
+    public BaseMovementController MovementController => movementController;
+    public BaseColliderController ColliderController => colliderController;
     public IBoneManager BoneManager => boneManager;
     public Vector3 Forward => transform.forward;
     public Vector3 Position => transform.position;
@@ -18,11 +21,11 @@ public class InGameObject : NetworkBehaviour
     public bool MovementActive { get; protected set; } = true;
     public bool RotationActive { get; protected set; } = true;
     [SerializeField] private BaseAnimationController animationController;
-    [SerializeField] private BaseCharacterMovementController movementController;
+    [SerializeField] private BaseMovementController movementController;
+    [SerializeField] private BaseColliderController colliderController;
     [SerializeField] private ABoneManager boneManager;
     [SerializeField] protected Transform graphicHolder;
     [SerializeField] protected bool isStaticObject;
-
 
     private void Update()
     {
@@ -44,6 +47,18 @@ public class InGameObject : NetworkBehaviour
     protected virtual void ClientUpdate()
     {
 
+    }
+    public virtual bool IsAlive()
+    {
+        return !isDied.Value;
+    }
+    public virtual void SetDied()
+    {
+        isDied.Value = true;
+    }
+    public virtual void SetIsRemoved()
+    {
+        IsRemoved = true;
     }
     public virtual void SetClanId(int id)
     {
@@ -143,5 +158,13 @@ public class InGameObject : NetworkBehaviour
         {
             AnimationController?.PauseBoolAnimation(animation);
         }
+    }
+    public virtual void ActiveColliders()
+    {
+        ColliderController.TurnOnCollider();
+    }
+    public virtual void DisableColliders()
+    {
+        ColliderController.TurnOffColliders();
     }
 }

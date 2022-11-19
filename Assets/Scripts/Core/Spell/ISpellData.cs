@@ -37,5 +37,6 @@ public interface ISpellData
     float ChannelDuration { get; }
 
     ISpellAoeWorker SpellAoeWorker { get; }
-
+    IRocketWorker RocketWorker { get; }
+    IDashWorker DashWorker { get; }
 }

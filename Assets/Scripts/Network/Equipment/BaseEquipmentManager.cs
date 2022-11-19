@@ -7,8 +7,8 @@ public class BaseEquipmentManager : NetworkBehaviour, IEquipmentManager
     public int LeftHandEquipment { get => leftHandEquipment?.Value ?? 0; set => SetLeftHandEquipment(value); }
     public int RightHandEquipment { get => rightHandEquipment?.Value ?? 0; set => SetRightHandEquipment(value); }
     [SerializeField] private ABoneManager boneManager;
-    [SerializeField] protected NetworkVariable<int> leftHandEquipment = new NetworkVariable<int>(GameHelper.UNSET_ITEM_ID, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    [SerializeField] protected NetworkVariable<int> rightHandEquipment = new NetworkVariable<int>(GameHelper.UNSET_ITEM_ID, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    [SerializeField] protected NetworkVariable<int> leftHandEquipment = new NetworkVariable<int>(GameHelper.UNSET_ID, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    [SerializeField] protected NetworkVariable<int> rightHandEquipment = new NetworkVariable<int>(GameHelper.UNSET_ID, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
 
     private GameObject leftHandEquipmentObject;
@@ -47,11 +47,11 @@ public class BaseEquipmentManager : NetworkBehaviour, IEquipmentManager
 
     private void ShowEquipments()
     {
-        if (LeftHandEquipment != GameHelper.UNSET_ITEM_ID)
+        if (LeftHandEquipment != GameHelper.UNSET_ID)
         {
             EquipEquipment(LeftHandEquipment, ref leftHandEquipmentObject);
         }
-        if (RightHandEquipment != GameHelper.UNSET_ITEM_ID)
+        if (RightHandEquipment != GameHelper.UNSET_ID)
         {
             EquipEquipment(RightHandEquipment, ref rightHandEquipmentObject);
         }
@@ -97,7 +97,7 @@ public class BaseEquipmentManager : NetworkBehaviour, IEquipmentManager
         {
             Debug.Log($"remove left item graphic");
         }
-        if (newValue == GameHelper.UNSET_ITEM_ID)
+        if (newValue == GameHelper.UNSET_ID)
         {
             return;
         }
@@ -110,7 +110,7 @@ public class BaseEquipmentManager : NetworkBehaviour, IEquipmentManager
         {
             Debug.Log($"remove left item graphic");
         }
-        if (newValue == GameHelper.UNSET_ITEM_ID)
+        if (newValue == GameHelper.UNSET_ID)
         {
             return;
         }

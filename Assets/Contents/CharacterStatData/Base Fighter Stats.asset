@@ -20,7 +20,7 @@ MonoBehaviour:
   - statData: {fileID: 11400000, guid: 1c7ea3ebb7aef444e9d2befc861b10d7, type: 2}
     baseValue: 40
   - statData: {fileID: 11400000, guid: 4ec02281446c94bda94ded20efdbcbbb, type: 2}
-    baseValue: 1000
+    baseValue: 1400
   - statData: {fileID: 11400000, guid: 1fd70d63aa85742fa8c235cef8ce5764, type: 2}
     baseValue: 15
   - statData: {fileID: 11400000, guid: f287f0acd9a264e7cb3058ad490b8787, type: 2}

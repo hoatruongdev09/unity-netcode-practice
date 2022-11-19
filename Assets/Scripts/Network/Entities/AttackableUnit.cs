@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using System;
+
 public class AttackableUnit : InGameObject
 {
     public bool IsDead { get; protected set; }
@@ -46,6 +48,19 @@ public class AttackableUnit : InGameObject
         var damageTaken = damageInfo.Damage - Stats.GetStat(StatType.Armor).Total;
         Stats.SetCurrentHp(Stats.CurrentHP - damageTaken);
         TakeDamageClientRpc(damageTaken, Stats.CurrentHP);
+        if (Stats.CurrentHP <= 0)
+        {
+            Die(damageInfo.From);
+        }
+    }
+
+    private void Die(AttackableUnit killer)
+    {
+        SetDied();
+        transform.LookAt(killer.Position, Vector3.up);
+        DisableColliders();
+        PlayAnimation("death");
+        GameHelper.TriggerCharacterDieSignal(killer, this);
     }
 
     [ClientRpc(Delivery = RpcDelivery.Reliable)]
@@ -55,14 +70,24 @@ public class AttackableUnit : InGameObject
         Debug.Log($"clientRpc obj {NetworkObjectId} take damage: {damage} {currentHp}");
     }
 
+    public override void SetDied()
+    {
+        IsDead = true;
+        isDied.Value = true;
+    }
+    public override bool IsAlive()
+    {
+        return base.IsAlive() && !IsDead;
+    }
     public override void Move(Vector3 direct)
     {
         Move(direct, Stats.GetStat(StatType.MoveSpeed).Total);
     }
     public override void Sprint(Vector3 direct)
     {
-        Sprint(direct, Stats.GetStat(StatType.MoveSpeed).Total * 1.4f);
+        Sprint(direct, Stats.GetStat(StatType.MoveSpeed).Total * 1.9f);
     }
+
     public override void RotateTo(float x, float y, float z)
     {
         RotateTo(x, y, z, Stats.GetStat(StatType.TurnRate).Total);
@@ -101,17 +126,34 @@ public class AttackableUnit : InGameObject
         {
             Spells[slot].SetOwner(null);
             spell.SetOwner(this);
+            spell.Active();
             Spells[slot] = spell;
             return;
         }
         spell.SetOwner(this);
         Spells.Add(slot, spell);
+        spell.Active();
     }
     public virtual void AddSpell(ISpell spell)
     {
         var spellCount = Spells.Count;
         spell.SetOwner(this);
         Spells.Add(spellCount, spell);
+        spell.Active();
+    }
+    public virtual void RemoveSpell(ISpell spell)
+    {
+        if (!Spells.ContainsValue(spell)) { return; }
+        spell.Disable();
+        spell.SetOwner(null);
+        foreach (var pair in Spells)
+        {
+            if (pair.Value == spell)
+            {
+                Spells.Remove(pair.Key);
+                break;
+            }
+        }
     }
 
     public virtual void EquipItem(int id)

@@ -10,22 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 091bddc4fde54499c9050ca8b004c8ac, type: 3}
-  m_Name: SpellData
+  m_Name: CastRocket
   m_EditorClassIdentifier: 
-  <ID>k__BackingField: 1
+  <ID>k__BackingField: 2
   <Name>k__BackingField: Test
   <Icon>k__BackingField: {fileID: 0}
-  <Cooldown>k__BackingField: 0.7
+  <Cooldown>k__BackingField: 3
   <CastRange>k__BackingField: 7
   <TargetFilter>k__BackingField: 12
-  <CastingType>k__BackingField: 12
+  <CastingType>k__BackingField: 4
   <ApplyEffectType>k__BackingField: 2
-  <ExecuteLogicType>k__BackingField: 1
+  <ExecuteLogicType>k__BackingField: 2
   <AutoFindTarget>k__BackingField: 1
   <UseForwardAsDefault>k__BackingField: 1
   <UseActorPositionAsDefault>k__BackingField: 1
   <UseAttackCastPoint>k__BackingField: 1
-  <DamageBonus>k__BackingField: 60
+  <DamageBonus>k__BackingField: 20
   <HasChannelPhase>k__BackingField: 0
   <CastImmediatelyAfterChannel>k__BackingField: 0
   <CastAfterChannel>k__BackingField: 0
@@ -35,15 +35,13 @@ MonoBehaviour:
   <ChannelPreventRotate>k__BackingField: 0
   <CastAnimation>k__BackingField:
   - one_hand_right_attack_1
-  - one_hand_right_attack_2
-  - one_hand_right_attack_3
-  - one_hand_right_attack_4
-  <CastAnimationPlayMode>k__BackingField: 1
+  <CastAnimationPlayMode>k__BackingField: 0
   <ChannelAnimation>k__BackingField: 
   <DashAnimation>k__BackingField: 
   <AnimationCastPoint>k__BackingField: 0.3
   <AnimationCastLockPoint>k__BackingField: 0.4
-  <AnimationCancelPoint>k__BackingField: 0.7
+  <AnimationCancelPoint>k__BackingField: 0.8
   <MinChannelTime>k__BackingField: 0
   <ChannelDuration>k__BackingField: 0
-  spellAoeWorker: {fileID: 11400000, guid: a97882e4d47a3423196e8876d0d65d4e, type: 2}
+  spellAoeWorker: {fileID: 0}
+  rocketWorker: {fileID: 11400000, guid: 067ede2c471d048619164803c6d437bc, type: 2}

@@ -7,6 +7,7 @@ public class NetworkContentManager : NetworkBehaviour
     public static NetworkContentManager Instance { get; private set; }
     public ScriptableCharacterData[] allCharacterData;
     public ScriptableEquipmentData[] allEquipmentData;
+    public ScriptableRocketWorker[] allRocketWorker;
     private void Awake()
     {
         if (Instance == null) { Instance = this; }
@@ -32,6 +33,15 @@ public class NetworkContentManager : NetworkBehaviour
     public IEquipmentData GetEquipmentData(int id)
     {
         foreach (var data in allEquipmentData)
+        {
+            if (data.ID == id) { return data; }
+        }
+        return null;
+    }
+
+    public IRocketWorker GetRocketWorker(int id)
+    {
+        foreach (var data in allRocketWorker)
         {
             if (data.ID == id) { return data; }
         }

@@ -10,6 +10,8 @@ public interface ISpell : IUpdate
     float CurrentCastTime { get; }
     float CurrentCooldown { get; }
 
+    void Active();
+    void Disable();
 
     void SetOwner(AttackableUnit owner);
     void SwitchState(SpellState nextState);

@@ -12,12 +12,14 @@ public class NetworkSpawnController : NetworkBehaviour
     public static OnNetworkObjectClientDespawn onNetworkObjectClientDespawn;
     [SerializeField] private GameObject character;
     [SerializeField] private GameObject figureCharacter;
+    [SerializeField] private GameObject rocketPrefab;
     [SerializeField] private NetworkObject propHolderPrefab;
 
     private NetworkObject characterHolder;
 
     private Dictionary<ulong, NetworkCharacterController> serverCharacters = new Dictionary<ulong, NetworkCharacterController>();
     private Dictionary<ulong, AttackableUnit> serverUnits = new Dictionary<ulong, AttackableUnit>();
+    private Dictionary<ulong, InGameObject> serverObjects = new Dictionary<ulong, InGameObject>();
     private Dictionary<ulong, NetworkObject> clientObjects = new Dictionary<ulong, NetworkObject>();
 
     public delegate void OnNetworkObjectClientSpawn(ulong objectId, NetworkObject networkObject);
@@ -56,8 +58,8 @@ public class NetworkSpawnController : NetworkBehaviour
                 characterHolder.Spawn(true);
                 characterHolder.name = "Character Holder";
             }
-            // var characterData = NetworkContentManager.Instance.GetCharacterData(1);
-            // var attackableUnit = CreateFigureUnit(characterData, new Vector3(25, 0, 25));
+            var characterData = NetworkContentManager.Instance.GetCharacterData(1);
+            var attackableUnit = CreateFigureUnit(characterData, new Vector3(25, 0, 25));
         }
     }
 
@@ -87,7 +89,19 @@ public class NetworkSpawnController : NetworkBehaviour
 
         }
     }
-
+    public void RemoveGameObject(ulong id)
+    {
+        if (IsServer)
+        {
+            if (serverObjects.TryGetValue(id, out var value))
+            {
+                value.SetDied();
+                value.SetIsRemoved();
+                value.NetworkObject?.Despawn();
+            }
+            serverCharacters.Remove(id);
+        }
+    }
     private void OnNetworkObjectDespawn(ulong objectId)
     {
         if (!IsClient) { return; }
@@ -117,6 +131,18 @@ public class NetworkSpawnController : NetworkBehaviour
         serverCharacters.Add(clientId, networkCharacter);
         OnMainCharacterSpawnClientRpc(attackableUnit.NetworkObject.NetworkObjectId, attackableUnit.NetworkObject.OwnerClientId);
     }
+    public GameObject CreateRocket(Vector3 position, Quaternion rotation, ICastInfo castInfo, Vector3 direct, AttackableUnit target, IRocketWorker worker)
+    {
+        var go = Instantiate(rocketPrefab, position, rotation);
+        var rocket = go.GetComponent<Rocket>();
+        rocket.SetCastInfo(castInfo);
+        rocket.SetMoveDirect(direct);
+        rocket.SetFollowTarget(target);
+        rocket.SetWorker(worker);
+        rocket.NetworkObject.Spawn();
+        serverObjects.Add(rocket.NetworkObject.NetworkObjectId, rocket);
+        return go;
+    }
     private AttackableUnit CreateUnit(ICharacterData characterData, Vector3 position)
     {
         var newCharacter = Instantiate(character, position, Quaternion.Euler(0, Mathf.Atan2(position.x, position.z), 0), characterHolder.transform);
@@ -127,9 +153,11 @@ public class NetworkSpawnController : NetworkBehaviour
         attackableUnit.InitializeSpells(characterData.GetAllSpells().Select(spellData => GameHelper.CreateSpell(spellData)).ToArray());
         attackableUnit.SetClanId(GameHelper.FREE_CLAN_ID);
         serverUnits.Add(attackableUnit.NetworkObjectId, attackableUnit);
+        serverObjects.Add(attackableUnit.NetworkObjectId, attackableUnit);
         attackableUnit.NetworkObject.TrySetParent(characterHolder);
         return attackableUnit;
     }
+
 
     private AttackableUnit CreateFigureUnit(ICharacterData characterData, Vector3 position)
     {
@@ -141,6 +169,7 @@ public class NetworkSpawnController : NetworkBehaviour
         attackableUnit.InitializeSpells(characterData.GetAllSpells().Select(spellData => GameHelper.CreateSpell(spellData)).ToArray());
         attackableUnit.SetClanId(GameHelper.FREE_CLAN_ID);
         serverUnits.Add(attackableUnit.NetworkObjectId, attackableUnit);
+        serverObjects.Add(attackableUnit.NetworkObjectId, attackableUnit);
         attackableUnit.NetworkObject.TrySetParent(characterHolder);
         return attackableUnit;
     }
