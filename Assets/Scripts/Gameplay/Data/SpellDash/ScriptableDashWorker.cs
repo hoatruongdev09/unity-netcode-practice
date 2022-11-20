@@ -9,8 +9,14 @@ public class ScriptableDashWorker : ScriptableObject, IDashWorker
 
     [field: SerializeField] public bool FaceToDirect { get; set; }
 
+    [field: SerializeField] public bool DashColliderTrigger { get; set; }
+
+    [field: SerializeField] public bool DetectCollisionWhenDash { get; set; }
+
     public IDashLogic DashLogic => dashLogic;
 
+    public IDashColliderWorker ColliderWorker => dashColliderWorker;
 
     [SerializeField] private ADashLogic dashLogic;
+    [SerializeField] private ADashColliderWorker dashColliderWorker;
 }

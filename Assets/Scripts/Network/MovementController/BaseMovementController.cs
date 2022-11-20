@@ -4,8 +4,8 @@ using UnityEngine;
 using Unity.Netcode;
 public class BaseMovementController : NetworkBehaviour
 {
-    protected bool isStopMovement;
-    protected bool isDashing;
+    public bool IsStopMovement { get; protected set; }
+    public bool IsDashing { get; protected set; }
     public virtual void MoveDirect(Vector3 direct, float speed, bool force = false)
     {
 
@@ -20,18 +20,18 @@ public class BaseMovementController : NetworkBehaviour
     }
     public virtual void StopMovement()
     {
-        isStopMovement = true;
+        IsStopMovement = true;
     }
     public virtual void StartMovement()
     {
-        isStopMovement = false;
+        IsStopMovement = false;
     }
     public virtual void StartDashing()
     {
-        isDashing = true;
+        IsDashing = true;
     }
     public virtual void StopDashing()
     {
-        isDashing = false;
+        IsDashing = false;
     }
 }

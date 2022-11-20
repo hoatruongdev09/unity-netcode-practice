@@ -11,7 +11,7 @@ public class NetworkCharacterRigidbodyMovementController : BaseMovementControlle
 
     public override void MoveDirect(Vector3 direct, float speed, bool force = false)
     {
-        if (isDashing && !force) { return; }
+        if (IsDashing && !force) { return; }
         rigidbody.velocity = direct * speed;
         // transform.Translate(direct * speed * Time.deltaTime, Space.World);
     }
@@ -36,11 +36,10 @@ public class NetworkCharacterRigidbodyMovementController : BaseMovementControlle
     }
     public override void StopDashing()
     {
-        if (isStopMovement)
-        {
-            rigidbody.mass = stopMass;
-            rigidbody.drag = stopDrag;
-        }
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.mass = stopMass;
+        rigidbody.drag = stopDrag;
+
         base.StopDashing();
     }
 }

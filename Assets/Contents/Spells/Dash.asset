@@ -17,7 +17,7 @@ MonoBehaviour:
   <Icon>k__BackingField: {fileID: 0}
   <Cooldown>k__BackingField: 3
   <CastRange>k__BackingField: 7
-  <TargetFilter>k__BackingField: 1
+  <TargetFilter>k__BackingField: 4
   <CastingType>k__BackingField: 4
   <ApplyEffectType>k__BackingField: 2
   <ExecuteLogicType>k__BackingField: 4

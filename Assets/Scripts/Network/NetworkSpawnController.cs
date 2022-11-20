@@ -16,6 +16,7 @@ public class NetworkSpawnController : NetworkBehaviour
     [SerializeField] private NetworkObject propHolderPrefab;
 
     private NetworkObject characterHolder;
+    [SerializeField] private bool spawnFigureUnit;
 
     private Dictionary<ulong, NetworkCharacterController> serverCharacters = new Dictionary<ulong, NetworkCharacterController>();
     private Dictionary<ulong, AttackableUnit> serverUnits = new Dictionary<ulong, AttackableUnit>();
@@ -58,8 +59,11 @@ public class NetworkSpawnController : NetworkBehaviour
                 characterHolder.Spawn(true);
                 characterHolder.name = "Character Holder";
             }
-            var characterData = NetworkContentManager.Instance.GetCharacterData(1);
-            var attackableUnit = CreateFigureUnit(characterData, new Vector3(25, 0, 25));
+            if (spawnFigureUnit)
+            {
+                var characterData = NetworkContentManager.Instance.GetCharacterData(1);
+                var attackableUnit = CreateFigureUnit(characterData, new Vector3(25, 0, 25));
+            }
         }
     }
 

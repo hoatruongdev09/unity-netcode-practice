@@ -28,7 +28,7 @@ public class Spell : ISpell
     private bool casted;
     private bool isCastLocked;
     private int castAnimationPlayIndex;
-
+    private IDashColliderFeedback dashCollider;
 
     public Spell(ISpellData spellData, AttackableUnit owner)
     {
@@ -50,7 +50,7 @@ public class Spell : ISpell
     public bool Execute(AttackableUnit target, Vector3 castLocation, Vector3 castDirection)
     {
         if (CurrentState == SpellState.Cooldown) { return false; }
-        Vector3 direct = castDirection;
+        Vector3 direct = castDirection.normalized;
         Vector3 location = castLocation;
         if (target != null && SpellData.CastingType.HasFlag(CastingType.Target) && GameHelper.GetSqrDistance(target.Position, GetActorPosition()) > Mathf.Pow(SpellData.CastRange, 2))
         {
@@ -103,6 +103,7 @@ public class Spell : ISpell
     }
     public void Execute(ICastInfo castInfo)
     {
+        Owner.CurrentSpell = this;
         CurrentCastInfo = castInfo;
         Debug.Log($"Excute: {castInfo.Target == null} ({castInfo.Location.x},{castInfo.Location.y},{castInfo.Location.z}) ({castInfo.Direction.x},{castInfo.Direction.y},{castInfo.Direction.z})");
 
@@ -121,6 +122,47 @@ public class Spell : ISpell
             StartCast();
         }
     }
+
+    public void Interrupt()
+    {
+        switch (CurrentState)
+        {
+            case SpellState.Channeling:
+                if (!string.IsNullOrEmpty(SpellData.ChannelAnimation))
+                {
+                    Owner.SetAnimation("cast_or_channel_spell", false);
+                }
+                if (SpellData.ChannelPreventMove)
+                {
+                    Owner.SetActiveMovement(true);
+                    Owner.StartMovement();
+                }
+                if (SpellData.ChannelPreventRotate)
+                {
+                    Owner.SetActiveRotation(true);
+                }
+                break;
+            case SpellState.Casting:
+                if (SpellData.CastPreventMove)
+                {
+                    Owner.SetActiveMovement(false);
+                }
+
+                if (SpellData.CastPreventRotate)
+                {
+                    Owner.SetActiveRotation(false);
+                }
+                if (HasCastAnimation(castAnimationPlayIndex))
+                {
+                    Owner.SetAnimation("cast_or_channel_spell", true);
+                }
+                break;
+            case SpellState.Dashing:
+                SpellData.DashWorker?.DashLogic.Stop(CurrentCastInfo.Target, SpellData.DashWorker, dashCollider);
+                break;
+        }
+    }
+
     public AttackableUnit FindNearestTarget(Vector3 position, float range, TargetFilter filter, Vector3 direct, float angle)
     {
         return NetworkSpawnController.Instance.FindNearestUnit(new TargetFilterParameters()
@@ -192,9 +234,28 @@ public class Spell : ISpell
     }
     private void ApplyDash(ICastInfo currentCastInfo)
     {
+        SwitchState(SpellState.Dashing);
         var direct = currentCastInfo.Direction;
         var target = currentCastInfo.Target;
-        SpellData.DashWorker.DashLogic.Move(target, SpellData.DashWorker, direct, OnDashStart, OnDashFinish);
+        dashCollider = SpellData.DashWorker.ColliderWorker.CreateFeedBack(OnDashTrigger, OnDashCollider);
+        dashCollider.SetTarget(target);
+        SpellData.DashWorker.DashLogic.StartLogic(target, SpellData.DashWorker, direct, dashCollider, OnDashStart, OnDashFinish);
+    }
+
+    private void OnDashTrigger(IDashColliderFeedback colliderFeedback, Collider collider)
+    {
+        if (!SpellData.ExecuteLogicType.HasFlag(ExecuteLogicType.Dash)) { return; }
+        AttackableUnit unit = collider.GetComponent<AttackableUnit>();
+        if (!unit) { return; }
+        if (SpellHelper.IsValidTarget(GetActor(), unit, SpellData.TargetFilter))
+        {
+            ApplyEffect(unit);
+        }
+    }
+
+    private void OnDashCollider(IDashColliderFeedback colliderFeedback, Collision collision)
+    {
+        Debug.Log($"Collision with {collision.gameObject.name}");
     }
 
     private void OnDashStart(InGameObject target)
@@ -202,12 +263,24 @@ public class Spell : ISpell
         target.SetActiveMovement(false);
         target.SetActiveRotation(false);
         target.PlayAnimation(SpellData.DashAnimation, 1);
+        if (SpellData.DashWorker.DashColliderTrigger)
+        {
+            target.ColliderController.SetCollisionColliderTriggers(true);
+        }
     }
 
     private void OnDashFinish(InGameObject target)
     {
         target.SetActiveMovement(true);
         target.SetActiveRotation(true);
+        if (SpellData.DashWorker.DashColliderTrigger)
+        {
+            target.ColliderController.SetCollisionColliderTriggers(false);
+        }
+        if (SpellData.SpellFinishType == SpellFinishType.AfterDash)
+        {
+            StartCooldown();
+        }
     }
 
     private void OnRocketTriggerObject(Rocket rocket, InGameObject obj)
@@ -225,13 +298,14 @@ public class Spell : ISpell
     {
         if (!rocket.IsAlive()) { return; }
         if (!SpellHelper.IsValidTarget(Owner, character, SpellData.TargetFilter)) { return; }
+
+        ApplyEffect(character);
+        rocket.SetCurrentHitTime(rocket.CurrentCharacterHitTime + 1);
         if (rocket.CurrentCharacterHitTime >= rocket.RocketWorker.LimitCharacterTime)
         {
             NetworkSpawnController.Instance.RemoveGameObject(rocket.NetworkObjectId);
             return;
         }
-        ApplyEffect(character);
-        rocket.SetCurrentHitTime(rocket.CurrentCharacterHitTime + 1);
     }
 
     public void OnPostCast()
@@ -244,10 +318,15 @@ public class Spell : ISpell
         if (SpellData.CastPreventMove)
         {
             Owner.SetActiveMovement(true);
+            Owner.StartMovement();
         }
         if (SpellData.CastPreventRotate)
         {
             Owner.SetActiveRotation(true);
+        }
+        if (SpellData.SpellFinishType == SpellFinishType.AfterCast)
+        {
+            StartCooldown();
         }
     }
     protected virtual bool HasCastAnimation(int index)
@@ -266,6 +345,9 @@ public class Spell : ISpell
                 break;
             case SpellState.WaitForCast:
                 break;
+            case SpellState.Dashing:
+                break;
+
             case SpellState.Channeling:
                 OnChanneling(delta);
                 break;
@@ -292,6 +374,7 @@ public class Spell : ISpell
         if (SpellData.CastPreventMove)
         {
             Owner.SetActiveMovement(false);
+            Owner.StopMovement();
         }
 
         if (SpellData.CastPreventRotate)
@@ -319,6 +402,7 @@ public class Spell : ISpell
         if (SpellData.ChannelPreventMove)
         {
             Owner.SetActiveMovement(false);
+            Owner.StopMovement();
         }
         if (SpellData.ChannelPreventRotate)
         {
@@ -338,6 +422,7 @@ public class Spell : ISpell
     public void StartCooldown()
     {
         Debug.Log("start cooldown");
+        Owner.CurrentSpell = null;
         CurrentCooldown = SpellData.Cooldown;
         SwitchState(SpellState.Cooldown);
     }
@@ -360,6 +445,7 @@ public class Spell : ISpell
         if (SpellData.ChannelPreventMove)
         {
             Owner.SetActiveMovement(true);
+            Owner.StartMovement();
         }
         if (SpellData.ChannelPreventRotate)
         {
@@ -392,7 +478,6 @@ public class Spell : ISpell
         if (CurrentCastTime == lastCalculatedCancelTime)
         {
             OnPostCast();
-            StartCooldown();
             return;
         }
     }
@@ -477,6 +562,5 @@ public class Spell : ISpell
             default: break;
         }
     }
-
 
 }

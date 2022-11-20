@@ -7,24 +7,33 @@ using System;
 public class AttackableUnit : InGameObject
 {
     public bool IsDead { get; protected set; }
-    public CharacterStats Stats { get; protected set; }
+    public ICharacterStats Stats { get => characterStats; }
     public IEquipmentManager EquipmentManager { get => equipmentManager; }
     public ICharacterData CharacterData { get; protected set; }
     public ISpell NormalAttackSpell { get; protected set; }
     public Dictionary<int, ISpell> Spells { get; protected set; }
     public ISpell CurrentSpell { get; set; }
 
+    [SerializeField] private NetworkCharacterStats characterStats;
     [SerializeField] private BaseEquipmentManager equipmentManager;
+    [SerializeField] private CharacterHeadUI characterHeadUI;
+
     public virtual void InitializeStats(ICharacterStatsData parameters)
     {
-        Stats = new CharacterStats(parameters);
+        if (IsServer)
+        {
+            characterStats.InitializeStats(parameters);
+        }
     }
     public virtual void InitializeSpells(ISpell[] spells)
     {
-        Spells = new Dictionary<int, ISpell>();
-        foreach (var spell in spells)
+        if (IsServer)
         {
-            AddSpell(spell);
+            Spells = new Dictionary<int, ISpell>();
+            foreach (var spell in spells)
+            {
+                AddSpell(spell);
+            }
         }
     }
     public virtual void LoadCharacterData(ICharacterData characterData)
@@ -35,19 +44,24 @@ public class AttackableUnit : InGameObject
     protected override void ServerUpdate()
     {
         base.ServerUpdate();
-        foreach (var spell in Spells.Values)
+        if (Spells != null)
         {
-            spell?.OnUpdate(Time.deltaTime);
+            foreach (var spell in Spells.Values)
+            {
+                spell?.OnUpdate(Time.deltaTime);
+            }
         }
         Stats?.OnUpdate(Time.deltaTime);
     }
 
+
     public void TakeDamage(IDamageInfo damageInfo)
     {
         if (!IsServer) { return; }
-        var damageTaken = damageInfo.Damage - Stats.GetStat(StatType.Armor).Total;
+        float lastHp = Stats.CurrentHP;
+        float damageTaken = damageInfo.Damage - Stats.GetStat(StatType.Armor).Total;
         Stats.SetCurrentHp(Stats.CurrentHP - damageTaken);
-        TakeDamageClientRpc(damageTaken, Stats.CurrentHP);
+        TakeDamageClientRpc(damageTaken, Stats.CurrentHP / Stats.GetStat(StatType.HealthPoint).Total, lastHp / Stats.GetStat(StatType.HealthPoint).Total);
         if (Stats.CurrentHP <= 0)
         {
             Die(damageInfo.From);
@@ -64,10 +78,10 @@ public class AttackableUnit : InGameObject
     }
 
     [ClientRpc(Delivery = RpcDelivery.Reliable)]
-    private void TakeDamageClientRpc(float damage, float currentHp)
+    private void TakeDamageClientRpc(float damage, float currentHpPercent, float lastHpPercent)
     {
-        if (!IsOwner) { return; }
-        Debug.Log($"clientRpc obj {NetworkObjectId} take damage: {damage} {currentHp}");
+        Debug.Log($"clientRpc obj {NetworkObjectId} take damage: {damage} {lastHpPercent} {currentHpPercent}");
+        characterHeadUI.SetHeadHP(lastHpPercent, currentHpPercent);
     }
 
     public override void SetDied()
@@ -95,6 +109,22 @@ public class AttackableUnit : InGameObject
     public virtual bool CanCast(ISpell spell)
     {
         if (spell.CurrentState != SpellState.Ready && spell.CurrentState != SpellState.WaitForCast) { return false; }
+        if (CurrentSpell != null)
+        {
+            if (CurrentSpell.CurrentState == SpellState.Casting && !CurrentSpell.SpellData.CanCancelWhileCasting)
+            {
+                return false;
+            }
+            if (CurrentSpell.CurrentState == SpellState.Channeling && !CurrentSpell.SpellData.CanCancelWhileChanneling)
+            {
+                return false;
+            }
+            if (CurrentSpell.CurrentState == SpellState.Dashing && !CurrentSpell.SpellData.CanCancelWhileDashing)
+            {
+                return false;
+            }
+            CurrentSpell.Interrupt();
+        }
         return true;
     }
     public virtual void CastSpell(ISpell spell, AttackableUnit target, Vector3 direct, Vector3 location)

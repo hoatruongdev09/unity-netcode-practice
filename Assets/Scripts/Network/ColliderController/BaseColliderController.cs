@@ -27,4 +27,12 @@ public class BaseColliderController : NetworkBehaviour
             collider.enabled = true;
         }
     }
+
+    public virtual void SetCollisionColliderTriggers(bool value)
+    {
+        foreach (var collider in collisionColliders)
+        {
+            collider.isTrigger = value;
+        }
+    }
 }

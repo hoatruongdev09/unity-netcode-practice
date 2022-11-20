@@ -6,4 +6,5 @@ public enum SpellState
     Casting = 3,
     Cooldown = 4,
     WaitForCast = 5,
+    Dashing = 6
 }

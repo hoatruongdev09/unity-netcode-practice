@@ -11,6 +11,7 @@ public interface ISpellData
     CastingType CastingType { get; }
     ApplyEffectType ApplyEffectType { get; }
     ExecuteLogicType ExecuteLogicType { get; }
+    SpellFinishType SpellFinishType { get; }
     bool HasChannelPhase { get; }
     bool CastImmediatelyAfterChannel { get; }
     bool CastAfterChannel { get; }
@@ -24,6 +25,9 @@ public interface ISpellData
     bool CastPreventRotate { get; }
     bool ChannelPreventMove { get; }
     bool ChannelPreventRotate { get; }
+    bool CanCancelWhileCasting { get; }
+    bool CanCancelWhileChanneling { get; }
+    bool CanCancelWhileDashing { get; }
 
     string[] CastAnimation { get; }
     AnimationsPlayMode CastAnimationPlayMode { get; }

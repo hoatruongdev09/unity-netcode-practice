@@ -63,11 +63,20 @@ public class ScriptableSpellData : ScriptableObject, ISpellData
 
     [field: SerializeField] public float ChannelDuration { get; set; }
 
+    [field: SerializeField] public SpellFinishType SpellFinishType { get; set; }
+
+    [field: SerializeField] public bool CanCancelWhileCasting { get; set; }
+
+    [field: SerializeField] public bool CanCancelWhileChanneling { get; set; }
+
+    [field: SerializeField] public bool CanCancelWhileDashing { get; set; }
+
     public ISpellAoeWorker SpellAoeWorker => spellAoeWorker;
 
     public IRocketWorker RocketWorker => rocketWorker;
 
     public IDashWorker DashWorker => dashWorker;
+
 
     [field: SerializeField] private ASpellAoeWorker spellAoeWorker;
     [field: SerializeField] private ScriptableRocketWorker rocketWorker;

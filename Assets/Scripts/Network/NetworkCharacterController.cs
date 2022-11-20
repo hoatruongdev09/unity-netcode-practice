@@ -153,7 +153,7 @@ public class NetworkCharacterController : NetworkBehaviour
         }
         if (IsSpell3CastInput())
         {
-            RequestCastSpellServerRpc(spellIndexes[2], Vector3.right, GameHelper.UNSET_VECTOR_3);
+            RequestCastSpellServerRpc(spellIndexes[2], moveInput, GameHelper.UNSET_VECTOR_3);
         }
         if (IsSpell4CastInput())
         {
