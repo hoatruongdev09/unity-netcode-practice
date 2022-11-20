@@ -10,12 +10,17 @@ public interface ISpell : IUpdate
     float CurrentCastTime { get; }
     float CurrentCooldown { get; }
 
+    void Active();
+    void Disable();
 
     void SetOwner(AttackableUnit owner);
     void SwitchState(SpellState nextState);
     AttackableUnit FindNearestTarget(Vector3 position, float range, TargetFilter filter, Vector3 direct, float angle);
     bool Execute(AttackableUnit target, Vector3 castLocation, Vector3 castDirection);
     void Execute(ICastInfo castInfo);
+
+    void Interrupt();
+
     void OnChanneling(float delta);
     void OnCasting(float delta);
 

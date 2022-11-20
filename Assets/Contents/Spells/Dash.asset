@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 091bddc4fde54499c9050ca8b004c8ac, type: 3}
+  m_Name: Dash
+  m_EditorClassIdentifier: 
+  <ID>k__BackingField: 1
+  <Name>k__BackingField: Dash
+  <Icon>k__BackingField: {fileID: 0}
+  <Cooldown>k__BackingField: 3
+  <CastRange>k__BackingField: 7
+  <TargetFilter>k__BackingField: 4
+  <CastingType>k__BackingField: 4
+  <ApplyEffectType>k__BackingField: 2
+  <ExecuteLogicType>k__BackingField: 4
+  <AutoFindTarget>k__BackingField: 1
+  <UseForwardAsDefault>k__BackingField: 1
+  <UseActorPositionAsDefault>k__BackingField: 1
+  <UseAttackCastPoint>k__BackingField: 1
+  <DamageBonus>k__BackingField: 60
+  <HasChannelPhase>k__BackingField: 0
+  <CastImmediatelyAfterChannel>k__BackingField: 0
+  <CastAfterChannel>k__BackingField: 0
+  <CastPreventMove>k__BackingField: 1
+  <CastPreventRotate>k__BackingField: 1
+  <ChannelPreventMove>k__BackingField: 0
+  <ChannelPreventRotate>k__BackingField: 0
+  <CastAnimation>k__BackingField:
+  - one_hand_right_attack_4
+  <CastAnimationPlayMode>k__BackingField: 1
+  <ChannelAnimation>k__BackingField: 
+  <DashAnimation>k__BackingField: 
+  <AnimationCastPoint>k__BackingField: 0.3
+  <AnimationCastLockPoint>k__BackingField: 0.3
+  <AnimationCancelPoint>k__BackingField: 0.4
+  <MinChannelTime>k__BackingField: 0
+  <ChannelDuration>k__BackingField: 0
+  spellAoeWorker: {fileID: 0}
+  rocketWorker: {fileID: 0}
+  dashWorker: {fileID: 11400000, guid: 3185ce088f7f848eab060820ed549bb8, type: 2}

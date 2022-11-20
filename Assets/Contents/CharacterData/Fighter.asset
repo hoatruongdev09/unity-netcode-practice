@@ -15,5 +15,8 @@ MonoBehaviour:
   <ID>k__BackingField: 1
   statsData: {fileID: 11400000, guid: 432ae7fa6026244588d5f10e894f49ab, type: 2}
   normalAttackSpell: {fileID: 11400000, guid: 6ab0d1aa9d19b46e9a47b2bc05ab554f, type: 2}
-  activeSpells: []
+  activeSpells:
+  - {fileID: 11400000, guid: 9c814bb47772e4bd3a16e8b710a7f88f, type: 2}
+  - {fileID: 11400000, guid: 97c0aa8ae59b1406591845f4219042d4, type: 2}
+  - {fileID: 11400000, guid: 73ab5f1b4bd114b4587c30e79b698ed7, type: 2}
   passiveSpells: []

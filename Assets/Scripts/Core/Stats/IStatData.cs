@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using Unity.Netcode;
 public interface IStatData
 {
     string Name { get; }

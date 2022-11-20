@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CharacterStatsData", menuName = "Data/ScriptableCharacterStatsData", order = 0)]
@@ -6,4 +7,6 @@ public class ScriptableCharacterStatsData : ScriptableObject, ICharacterStatsDat
     public ICharacterStatParameters[] Stats => stats;
 
     [SerializeField] private CharacterStatParameters[] stats;
+
+
 }

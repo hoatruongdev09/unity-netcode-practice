@@ -27,11 +27,18 @@ public class NetworkGameController : NetworkBehaviour
     private void RegisterListeners()
     {
         Signals.Get<TakeDamageSignal>().AddListener(OnTakeDamageEvent);
+        Signals.Get<CharacterDieSignal>().AddListener(OnCharacterDie);
     }
 
     private void RemoveListeners()
     {
         Signals.Get<TakeDamageSignal>().RemoveListener(OnTakeDamageEvent);
+        Signals.Get<CharacterDieSignal>().RemoveListener(OnCharacterDie);
+    }
+
+    private void OnCharacterDie(AttackableUnit killer, AttackableUnit victim)
+    {
+
     }
 
     private void OnTakeDamageEvent(IDamageInfo damageInfo)

@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "StatData", menuName = "Data/ScriptableStatData", order = 0)]
@@ -17,4 +18,6 @@ public class ScriptableStatData : ScriptableObject, IStatData
 
     public IStatFormatter Formatter => formatter;
     [SerializeField] private AStatFormatter formatter;
+
+
 }
